@@ -1,7 +1,5 @@
 import re
 from collections.abc import AsyncIterator, Generator
-from pathlib import Path
-from time import sleep
 from typing import Any
 
 import scrapy
@@ -34,13 +32,6 @@ class AchievementSpider(scrapy.Spider, HttpUtils):
         urls = self._parse_app_ids_to_achievements_urls(response=response)
         self.game_urls.update(urls)
 
-        print(f'URLS {len(self.game_urls)}')
-        print(f'ALL URLS -> {self.game_urls}')
-
-        Path('test.txt').write_text(response.text, encoding='utf-8')
-
-        sleep(100)
-
         perfect_tab_url = f'https://steamcommunity.com/id/{self.username}/games/?tab=perfect'
 
         yield scrapy.Request(
@@ -53,10 +44,6 @@ class AchievementSpider(scrapy.Spider, HttpUtils):
     def parse_game_urls_from_perfect_tab(self, response: Response) -> Generator[scrapy.Request, Any, None]:
         urls = self._parse_app_ids_to_achievements_urls(response=response)
         self.game_urls.update(urls)
-
-        print(f'URLS {len(self.game_urls)}')
-        print(f'PERFECT URLS -> {self.game_urls}')
-        sleep(100)
 
         for url in self.game_urls:
             yield scrapy.Request(
@@ -88,6 +75,7 @@ class AchievementSpider(scrapy.Spider, HttpUtils):
             achievement['unlock_time'] = unlock_time
             achievement['unlocked'] = unlocked
             achievement['total'] = total
+            achievement['url'] = response.url
 
             yield achievement
 
@@ -114,7 +102,7 @@ class AchievementSpider(scrapy.Spider, HttpUtils):
 
     def _parse_app_ids_to_achievements_urls(self, response: Response) -> set[str]:
         urls = set()
-        appids = set(re.findall(r'"appid\\":(\d+),', response.text))
+        appids = set(re.findall(r'"appid\\*"?:(\d+)', response.text))
         for appid in appids:
             url = f'https://steamcommunity.com/id/{self.username}/stats/{appid}/achievements/'
             urls.add(url)

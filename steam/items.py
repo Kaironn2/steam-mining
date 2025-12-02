@@ -14,3 +14,4 @@ class Achievement(scrapy.Item):
     unlock_time = scrapy.Field()
     unlocked = scrapy.Field()
     total = scrapy.Field()
+    url = scrapy.Field()

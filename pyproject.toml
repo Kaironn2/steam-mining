@@ -14,4 +14,4 @@ dev = [
 ]
 
 [tool.taskipy.tasks]
-achievement = 'scrapy crawl achievement -o achievements.json'
+achievement = 'scrapy crawl achievement -O achievements.json'
