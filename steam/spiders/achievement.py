@@ -12,12 +12,14 @@ from steam.utils.http import HttpUtils
 
 class AchievementSpider(scrapy.Spider, HttpUtils):
     name = 'achievement'
+    LANGUAGE = 'english'
 
     def __init__(self):
         HttpUtils.__init__(self)
         super().__init__()
         self.username = 'kaironn1'
         self.game_urls = set()
+        self.json_file = 'curl.json'
 
     async def start(self) -> AsyncIterator[Any]:
         url = f'https://steamcommunity.com/id/{self.username}/games/?tab=all'
@@ -107,8 +109,9 @@ class AchievementSpider(scrapy.Spider, HttpUtils):
         
         game = game.strip()
         game = game.replace('Estatísticas de ', '')
+        game = re.sub(r'\s*stats$', '', game, flags=re.I)
         
-        return game
+        return game.strip()
 
     def _parse_app_ids_to_achievements_urls(self, response: Response) -> set[str]:
         urls = set()
