@@ -1,12 +1,18 @@
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+
+LANG_MAPPING = {
+    'english': 'en;q=0.9,en-US;q=0.8'
+}
+
 
 class HttpUtils:
-    DEFAULT_JSON_FILE = Path('curl.json')
+    _DEFAULT_JSON_FILE = Path('curl.json')
+    LANGUAGE: Literal['english'] = 'english'
 
     def __init__(self, json_file: str | Path | None = None):
-        self.json_file = Path(json_file) if json_file else self.DEFAULT_JSON_FILE
+        self.json_file = Path(json_file) if json_file else self._DEFAULT_JSON_FILE
 
     @property
     def data(self) -> dict[str, Any]:
@@ -28,6 +34,10 @@ class HttpUtils:
 
         headers.pop('Referer', None)
 
+        accept_language = LANG_MAPPING.get(self.LANGUAGE)
+        if accept_language and headers.get('Accept-Language'):
+            headers['Accept-Language'] = accept_language
+
         return headers
 
     @property
@@ -39,5 +49,7 @@ class HttpUtils:
         required_keys = ['steamLoginSecure', 'browserid', 'sessionid']
         if not all(key in cookies for key in required_keys):
             raise ValueError(f'Missing required cookies: {required_keys}')
+        
+        cookies['Steam_Language'] = self.LANGUAGE
 
         return cookies
