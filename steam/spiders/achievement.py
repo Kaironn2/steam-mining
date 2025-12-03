@@ -7,7 +7,9 @@ from parsel import Selector, SelectorList
 from scrapy.http import Response
 
 from steam.items import Achievement
+from steam.utils.datetime import DatetimeUtils
 from steam.utils.http import HttpUtils
+from steam.utils.text import TextUtils
 
 
 class AchievementSpider(scrapy.Spider, HttpUtils):
@@ -69,12 +71,15 @@ class AchievementSpider(scrapy.Spider, HttpUtils):
         for card in achievement_cards:
             achievement_info = card.xpath('./div[contains(@class, "achieveTxt")]')
             title = achievement_info.xpath('./h3/text()').get()
+
             description = achievement_info.xpath('./h5/text()').get()
+            description = TextUtils.normalize(description)
 
             progress_bar = achievement_info.xpath('./div[contains(@class, "achievementProgressBar")]')
             current_progress, total_progress = self._parse_progression(progress_bar=progress_bar)
                 
             unlock_time = card.xpath('./div[@class="achieveUnlockTime"]/text()').get()
+            unlock_time = DatetimeUtils.parse_unlock_time(unlock_str=unlock_time)
 
             achievement = Achievement()
             achievement['username'] = self.username
